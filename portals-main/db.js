@@ -475,9 +475,13 @@ async function ensureMemoryLoaded() {
 
 async function enqueue(entry) {
   if (USE_MONGO) {
-    await ensureMongo();
-    await mongoStore.enqueue(entry);
-    return;
+    try {
+      await ensureMongo();
+      await mongoStore.enqueue(entry);
+      return;
+    } catch (err) {
+      console.warn('[DB Fallback] MongoDB write failed (' + err.message + '). Saving to local storage.');
+    }
   }
 
   // 1. Immediately apply to authoritative in-memory state
@@ -528,8 +532,12 @@ async function ensureMongo() {
 
 async function readAll() {
   if (USE_MONGO) {
-    await ensureMongo();
-    return mongoStore.readAll();
+    try {
+      await ensureMongo();
+      return await mongoStore.readAll();
+    } catch (err) {
+      console.warn('[DB Fallback] MongoDB read failed (' + err.message + '). Serving local state.');
+    }
   }
 
   const rawState = await ensureMemoryLoaded();
@@ -562,10 +570,14 @@ async function readAll() {
 
 async function getStoredFile(fileId) {
   if (!USE_MONGO) return null;
-  await ensureMongo();
-  const file = await mongoStore.getFile(fileId);
-  if (file) saveInMemoryFile(fileId, file.buffer, file.mimeType, file.originalName);
-  return file;
+  try {
+    await ensureMongo();
+    const file = await mongoStore.getFile(fileId);
+    if (file) saveInMemoryFile(fileId, file.buffer, file.mimeType, file.originalName);
+    return file;
+  } catch (err) {
+    return null;
+  }
 }
 
 // ---------- writing into the workbook ----------

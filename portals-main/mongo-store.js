@@ -21,7 +21,8 @@ async function connect() {
   }
   if (!clientPromise) {
     const client = new MongoClient(uri, {
-      serverSelectionTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000,
       maxPoolSize: 10
     });
     clientPromise = client.connect().then(connected => {
