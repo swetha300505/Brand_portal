@@ -573,7 +573,10 @@
           </datalist>
         </div>
         <div class="form-group" style="margin:0;">
-          <label for="modalDeptPhone" style="font-size:12px;">Phone Number (+63) <span class="req-star">*</span></label>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+            <label for="modalDeptPhone" style="font-size:12px;margin:0;">Phone Number (+63) <span class="req-star">*</span></label>
+            <button type="button" class="btn sm" onclick="fillRandomModalDeptPhone()" style="padding:1px 6px;font-size:11px;">↺ Auto-fill Number</button>
+          </div>
           <input id="modalDeptPhone" placeholder="e.g. +63 917 123 4567 or (02) 8123 4567">
         </div>
         <div id="modalDeptErr" class="field-error" style="display:none;"></div>
@@ -1605,7 +1608,20 @@
       input.value = '';
       renderDeptManagerList();
       populateDeptSelects();
-      showToast('Department Added', `Department "${name}" is now available.`, 'success');
+
+      // Immediately select the new department as active in the form
+      const targetSel = $('targetDeptSelect');
+      if (targetSel) targetSel.value = name;
+
+      // Assign newly added department to form numbers so change is immediately visible
+      if (assignedNumbers && assignedNumbers.length > 0) {
+        assignedNumbers.forEach(n => { n.department = name; });
+        renderAssignedNumbersTable();
+        renderDeptFilterPills();
+        updateLivePreview();
+      }
+
+      showToast('Department Active', `"${name}" is now selected for your calling numbers.`, 'success');
     }
 
     function promptRenameDept(oldName) {
@@ -2321,9 +2337,15 @@
       `).join('');
     }
 
+    function fillRandomModalDeptPhone() {
+      const gen = generatePhilippineNumber('mobile');
+      $('modalDeptPhone').value = gen.display;
+    }
+
     function openAddDeptLineModal() {
       $('modalDeptName').value = 'Marketing';
-      $('modalDeptPhone').value = '+63 ';
+      const gen = generatePhilippineNumber('mobile');
+      $('modalDeptPhone').value = gen.display;
       $('modalDeptErr').style.display = 'none';
       $('addDeptLineModal').classList.add('open');
       setTimeout(() => $('modalDeptPhone').focus(), 150);
