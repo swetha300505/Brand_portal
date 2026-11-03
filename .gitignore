@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment
+.env
+.env.*
+
+# Logs & temp
+*.log
+**/*.log
+.DS_Store
+Thumbs.db

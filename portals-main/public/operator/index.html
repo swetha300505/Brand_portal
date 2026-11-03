@@ -1,0 +1,1571 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Mobileum Caller ID &middot; Operator Portal</title>
+  <link rel="stylesheet" href="/shared/common.css">
+</head>
+<body>
+  <!-- Hidden legacy header links for backward compatibility -->
+  <div style="display:none;">
+    <a id="lEn" target="_blank"></a>
+    <a id="lCu" target="_blank"></a>
+  </div>
+
+  <!-- Hidden status anchor for backward compatibility (topbar chip is active) -->
+  <div id="dbstat" style="display:none;"></div>
+
+  <!-- TAB 1: DASHBOARD -->
+  <div data-tab-panel="dashboard">
+    <div class="grid-4" style="margin-bottom:24px;">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#EEF2FF;color:#0000FF;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        </div>
+        <div class="stat-info">
+          <div class="stat-label">Total Packages</div>
+          <div class="stat-value" id="stat_pkgs">0</div>
+        </div>
+      </div>
+
+      <div class="stat-card pending">
+        <div class="stat-icon" style="background:#FEF3C7;color:#D97706;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="stat-info">
+          <div class="stat-label">Pending Reviews</div>
+          <div class="stat-value" id="stat_pending">0</div>
+        </div>
+      </div>
+
+      <div class="stat-card approved">
+        <div class="stat-icon" style="background:#DEF7EC;color:#0E9F6E;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div class="stat-info">
+          <div class="stat-label">Approved Registrations</div>
+          <div class="stat-value" id="stat_approved">0</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#E0F2FE;color:#0284C7;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </div>
+        <div class="stat-info">
+          <div class="stat-label">Registered Numbers</div>
+          <div class="stat-value" id="stat_numbers">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px;">
+      <div class="card-header">
+        <h2 class="card-title">Recent Registration Activity</h2>
+        <div style="display:flex;gap:8px;">
+          <button class="btn sm no" onclick="openResetDemoModal()" style="font-size:11.5px;padding:5px 10px;">Reset Demo Data</button>
+          <button class="btn sm" onclick="portalShell.switchTab('requests')">View All Requests &rarr;</button>
+        </div>
+      </div>
+      <div id="dash_activity" class="table-wrap">
+        <div class="empty-state">Loading activity...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: PACKAGES -->
+  <div data-tab-panel="packages" style="display:none;">
+    <div class="packages-layout">
+      <!-- Left: Create / Edit Package Form (Always visible & sticky) -->
+      <div class="packages-form-col">
+        <!-- Tile 1: Package Details -->
+        <div class="tile-card">
+          <div class="tile-header">
+            <div class="tile-title-group">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+              <span id="pkgFormTitle">Package details</span>
+            </div>
+            <span class="badge" id="pkgFormModeBadge" style="display:none;background:#FEF3C7;color:#D97706;">Editing</span>
+          </div>
+
+          <div class="form-group">
+            <label for="pName">Package Name <span class="req-star">*</span></label>
+            <input type="text" id="pName" placeholder="e.g. Bank Standard" autocomplete="off">
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="form-group">
+              <label for="pCap">Number Capacity <span class="req-star">*</span></label>
+              <input type="number" id="pCap" min="1" value="5">
+            </div>
+            <div class="form-group">
+              <label for="pPrice">Monthly Price (₱, before VAT) <span class="req-star">*</span></label>
+              <input type="number" id="pPrice" min="0" step="0.01" value="15000">
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label for="pDuration">Pack Duration</label>
+              <input type="text" id="pDuration" placeholder="e.g. 30 Days" value="30 Days">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label for="pCalls">No. of Branded Calls</label>
+              <input type="number" id="pCalls" min="1000" step="1000" placeholder="e.g. 50000" value="50000">
+            </div>
+          </div>
+        </div>
+
+        <!-- Tile 2: Included Features -->
+        <div class="tile-card">
+          <div class="tile-header">
+            <div class="tile-title-group">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <span>Included features</span>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <label style="margin:0;display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:500;">
+              <input type="checkbox" id="pBrand" checked>
+              <span>Official Brand Name</span>
+            </label>
+            <label style="margin:0;display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:500;">
+              <input type="checkbox" id="pTag">
+              <span>Tagline Support</span>
+            </label>
+            <label style="margin:0;display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:500;">
+              <input type="checkbox" id="pLogo" checked>
+              <span>Logo Display</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Tile 3: Price Summary & Publish -->
+        <div class="tile-card">
+          <div class="tile-header">
+            <div class="tile-title-group">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <span>Price summary</span>
+            </div>
+          </div>
+
+          <div id="feeHint" style="padding:12px;background:#F8FAFD;border-radius:8px;border:1px solid var(--border);margin-bottom:14px;"></div>
+          <div id="pMsg" class="msg" style="margin-bottom:12px;"></div>
+
+          <div style="display:flex;gap:10px;">
+            <button type="button" class="btn sm" id="btnCancelEdit" onclick="cancelPackageEdit()" style="display:none;flex:1;">Cancel Edit</button>
+            <button type="button" class="p" onclick="publish()" id="btnPublish" style="flex:2;height:44px;font-size:14px;">Publish Package</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Published Packages Cards Grid -->
+      <div class="packages-list-col">
+        <div class="card" style="margin-bottom:0;">
+          <div class="card-header" style="flex-wrap:wrap;gap:8px;">
+            <div>
+              <h2 class="card-title">Published Packages</h2>
+              <div class="hint">Active caller-ID subscription packages available to enterprises across the Philippines.</div>
+            </div>
+            <span class="badge approved" id="badge_pkg_count">0 active</span>
+          </div>
+
+          <div id="pkgs" class="table-wrap" style="display:none;"></div>
+          <div id="pkgsCardsContainer" class="pkg-cards-grid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: REQUESTS -->
+  <div data-tab-panel="requests" style="display:none;">
+    <div class="card">
+      <div class="card-header" style="flex-wrap:wrap;gap:12px;">
+        <div>
+          <h2 class="card-title">Enterprise Registration Requests</h2>
+          <div class="hint">Review official bank caller ID registrations. Click any row to review details or remove a request.</div>
+        </div>
+        <div style="width:280px;">
+          <input type="text" id="reqSearch" placeholder="Search bank, department, phone..." oninput="filterRequests()">
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <button class="filter-chip active" data-filter="all" onclick="setReqFilter('all', this)">All (<span id="cnt_all">0</span>)</button>
+        <button class="filter-chip" data-filter="pending" onclick="setReqFilter('pending', this)">Pending (<span id="cnt_pending">0</span>)</button>
+        <button class="filter-chip" data-filter="partially approved" onclick="setReqFilter('partially approved', this)">Partially Approved (<span id="cnt_partial">0</span>)</button>
+        <button class="filter-chip" data-filter="approved" onclick="setReqFilter('approved', this)">Approved (<span id="cnt_approved">0</span>)</button>
+        <button class="filter-chip" data-filter="rejected" onclick="setReqFilter('rejected', this)">Rejected (<span id="cnt_rejected">0</span>)</button>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table" id="reqTable">
+          <thead>
+            <tr>
+              <th>Request ID</th>
+              <th>Bank / Enterprise</th>
+              <th>Package</th>
+              <th>Numbers</th>
+              <th>Monthly Total (₱)</th>
+              <th>Submitted</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="reqsTableBody">
+            <tr><td colspan="8" class="empty-state">Loading requests...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Hidden legacy container for backward compatibility -->
+      <div id="reqs" style="display:none;"></div>
+      <div id="rMsg" class="msg"></div>
+    </div>
+  </div>
+
+  <!-- TAB 4: REGISTERED NUMBERS -->
+  <div data-tab-panel="numbers" style="display:none;">
+    <div class="card">
+      <div class="card-header" style="flex-wrap:wrap;gap:12px;">
+        <div>
+          <h2 class="card-title">All Registered Phone Numbers</h2>
+          <div class="hint">Full operator network registry of approved business caller-ID numbers.</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <button class="btn sm" id="btnToggleDeletedOpNums" onclick="toggleDeletedOperatorNumbers()">Show Removed</button>
+          <div style="width:220px;">
+            <input type="text" id="numSearch" placeholder="Filter numbers..." oninput="renderNumbersTable()">
+          </div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Phone Number (+63)</th>
+              <th>Type</th>
+              <th>Department</th>
+              <th>Enterprise / Bank</th>
+              <th>Request Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="allNumbersTableBody">
+            <tr><td colspan="6" class="empty-state">Loading numbers...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 5: LIVE EXCEL SHEET -->
+  <div data-tab-panel="sheet" style="display:none;">
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Database Export</h2>
+          <div class="hint">Download a point-in-time Excel snapshot of the MongoDB database for reporting or offline reference.</div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <a href="/api/database" class="btn p sm">Download Excel (.xlsx) &darr;</a>
+        </div>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;height:650px;background:#FFFFFF;">
+        <iframe src="/sheet.html" style="width:100%;height:100%;border:none;" title="Live Excel Sheet Preview"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE-OVER DRAWER FOR REQUEST REVIEW -->
+  <div class="drawer-backdrop" id="reqDrawerBackdrop" onclick="closeDrawer()"></div>
+  <aside class="drawer" id="reqDrawer" aria-label="Request Review Details">
+    <div class="drawer-header">
+      <div>
+        <h3 class="drawer-title" id="drawerBankName">Bank Details</h3>
+        <span class="hint" id="drawerReqId">REQ-...</span>
+      </div>
+      <button class="drawer-close" onclick="closeDrawer()" title="Close">&times;</button>
+    </div>
+
+    <div class="drawer-body" id="drawerContent">
+      <!-- Dynamic Drawer Content populated by JS -->
+    </div>
+
+    <div class="drawer-footer" id="drawerFooter">
+      <!-- Dynamic Action Buttons -->
+    </div>
+  </aside>
+
+  <script src="/shared/common.js"></script>
+  <script src="/shared/ph.js"></script>
+  <script src="/shared/layout.js"></script>
+  <script>
+    let info = {};
+    let allRequests = [];
+    let allPackages = [];
+    let allNumbers = [];
+    let activeFilter = 'all';
+    let selectedReq = null;
+    let knownRequestIds = new Set();
+    let isFirstLoad = true;
+    let showDeletedOpNums = false;
+    let editingPackageId = null;
+
+    // Initialize Layout Shell
+    const portalShell = setupPortalLayout({
+      portalName: 'Mobileum Operator Portal',
+      portalRole: 'operator',
+      tabs: [
+        { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
+        { id: 'packages', label: 'Packages', icon: 'packages', badgeId: 'nav_badge_pkgs' },
+        { id: 'requests', label: 'Requests', icon: 'requests', badgeId: 'nav_badge_reqs' },
+        { id: 'numbers', label: 'Registered Numbers', icon: 'numbers' },
+        { id: 'sheet', label: 'Database', icon: 'sheet' }
+      ],
+      defaultTab: 'dashboard'
+    });
+
+    // Publish Package
+    async function publish() {
+      const m = $('pMsg');
+      m.className = 'msg';
+      const btn = $('btnPublish');
+      const name = $('pName').value.trim();
+      const cap = Number($('pCap').value);
+      const price = parseFloat($('pPrice').value || '0');
+      const duration = ($('pDuration')?.value || '30 Days').trim();
+      const calls = Number($('pCalls')?.value || 50000);
+
+      if (!name) {
+        m.className = 'msg err';
+        m.textContent = 'Package name is required';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = dotsLoader() + ' Publishing...';
+
+      try {
+        const isEditing = !!editingPackageId;
+        const p = await api(isEditing ? '/api/packages/' + encodeURIComponent(editingPackageId) : '/api/packages', {
+          method: isEditing ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            capacity: cap,
+            duration,
+            brandedCalls: calls,
+            pricePHP: price,
+            brand: $('pBrand').checked,
+            callReason: $('pTag').checked,
+            tagline: $('pTag').checked,
+            logoIncluded: $('pLogo').checked
+          })
+        });
+        saveClientPackage(p);
+        m.className = 'msg good';
+        m.textContent = (isEditing ? 'Updated ' : 'Published ') + p.name + ' at ' + peso(p.pricePHP) + ' / month';
+        cancelPackageEdit();
+        closePackageDrawer();
+        showToast(isEditing ? 'Package Updated' : 'Package Published', `${p.name} (Capacity: ${p.capacity}) is now live.`, 'success');
+        await load();
+      } catch (e) {
+        m.className = 'msg err';
+        m.textContent = e.message;
+        showToast('Error', e.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = editingPackageId ? 'Save Changes' : 'Publish Package';
+      }
+    }
+
+    function editPackage(pkgId) {
+      const p = allPackages.find(x => x.packageId === pkgId);
+      if (!p) return;
+      editingPackageId = pkgId;
+      if ($('pkgFormTitle')) $('pkgFormTitle').textContent = `Edit: ${p.name}`;
+      if ($('pkgFormModeBadge')) $('pkgFormModeBadge').style.display = 'inline-flex';
+      $('pName').value = p.name;
+      $('pCap').value = p.capacity;
+      $('pPrice').value = p.pricePHP;
+      if ($('pDuration')) $('pDuration').value = p.duration || '30 Days';
+      if ($('pCalls')) $('pCalls').value = p.brandedCalls || 50000;
+      $('pBrand').checked = p.brand === true || p.brand === 'true';
+      $('pTag').checked = p.callReason === true || p.callReason === 'true' || p.tagline === true || p.tagline === 'true';
+      $('pLogo').checked = p.logoIncluded === true || p.logoIncluded === 'true';
+      $('btnPublish').textContent = 'Save Changes';
+      if ($('btnCancelEdit')) $('btnCancelEdit').style.display = 'inline-flex';
+      $('pMsg').className = 'msg';
+      $('pMsg').textContent = '';
+      feeHint();
+      $('pName').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      $('pName').focus();
+    }
+
+    function cancelPackageEdit() {
+      editingPackageId = null;
+      if ($('pkgFormTitle')) $('pkgFormTitle').textContent = 'Package details';
+      if ($('pkgFormModeBadge')) $('pkgFormModeBadge').style.display = 'none';
+      $('pName').value = '';
+      $('pCap').value = '5';
+      $('pPrice').value = '15000';
+      if ($('pDuration')) $('pDuration').value = '30 Days';
+      if ($('pCalls')) $('pCalls').value = '50000';
+      $('pBrand').checked = true;
+      $('pTag').checked = true;
+      $('pLogo').checked = true;
+      $('btnPublish').textContent = 'Publish Package';
+      if ($('btnCancelEdit')) $('btnCancelEdit').style.display = 'none';
+      $('pMsg').className = 'msg';
+      $('pMsg').textContent = '';
+      feeHint();
+    }
+
+    // Remove Package (Removes from Operator & Enterprise selector)
+    function removePackage(pkgId) {
+      const p = allPackages.find(x => x.packageId === pkgId);
+      const pkgName = p ? p.name : pkgId;
+      showConfirmModal({
+        title: 'Remove Package',
+        message: `Are you sure you want to remove package "${pkgName}"? It will be hidden from the active package list and Enterprise subscription options.`,
+        confirmText: 'Remove Package',
+        confirmClass: 'no',
+        onConfirm: async () => {
+          try {
+            removeClientPackage(pkgId);
+            await api('/api/packages/' + encodeURIComponent(pkgId), { method: 'DELETE' });
+            showToast('Package Removed', `Package "${pkgName}" was removed from both portals.`, 'info');
+            await load();
+          } catch (e) {
+            showToast('Error', e.message, 'error');
+          }
+        }
+      });
+    }
+
+    // Modal & prompt for required rejection remarks per number or common remark
+    let pendingDecisionReq = null;
+    let drawerRemarkMode = 'common';
+
+    function openDecisionModal() {
+      if (!selectedReq) return;
+      pendingDecisionReq = selectedReq;
+      const unticked = (selectedReq.numbers || []).filter(n => !selectedNumIds.has(n.numberId));
+      const ticked = (selectedReq.numbers || []).filter(n => selectedNumIds.has(n.numberId));
+
+      $('rejectModalBrand').textContent = selectedReq.brandName;
+      $('rejectModalSummary').innerHTML = `
+        <div style="display:flex;gap:12px;align-items:center;padding:10px 14px;background:#F8FAFD;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:12px;font-size:13px;">
+          <div>Approve: <strong style="color:var(--status-approved);">${ticked.length}</strong></div>
+          <div style="color:var(--border);">|</div>
+          <div>Reject: <strong style="color:var(--status-rejected);">${unticked.length}</strong></div>
+          <div class="hint" style="margin-left:auto;">${unticked.length === selectedReq.numbers.length ? 'Full rejection' : 'Partial rejection'}</div>
+        </div>
+      `;
+
+      // Set radio mode
+      drawerRemarkMode = 'common';
+      const rCommon = $('remarkModeCommon');
+      const rIndiv = $('remarkModeIndiv');
+      if (rCommon) rCommon.checked = true;
+      if (rIndiv) rIndiv.checked = false;
+
+      // Reset common remarks input
+      if ($('rejectRemarksInput')) $('rejectRemarksInput').value = selectedReq.remarks || '';
+      $('rejectRemarksErr').style.display = 'none';
+
+      // Render individual remarks list
+      const indivWrap = $('individualRemarksList');
+      if (indivWrap) {
+        indivWrap.innerHTML = unticked.map((n, idx) => `
+          <div style="margin-bottom:10px;padding:10px;background:#F8FAFD;border:1px solid var(--border);border-radius:var(--radius-sm);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12.5px;">
+              <strong style="color:var(--deep-navy);">${idx + 1}. ${esc(n.department)}</strong>
+              <span class="peso font-weight:600;">${esc(n.phoneDisplay)}</span>
+            </div>
+            <textarea class="indiv-remark-field" data-numid="${esc(n.numberId)}" rows="2" placeholder="Required remarks for ${esc(n.phoneDisplay)}..." style="width:100%;font-size:12px;padding:8px;" oninput="validateDecisionModal()">${esc(n.remarks || '')}</textarea>
+          </div>
+        `).join('');
+      }
+
+      setRemarkMode('common');
+      validateDecisionModal();
+      $('rejectModal').classList.add('open');
+      setTimeout(() => {
+        if ($('rejectRemarksInput')) $('rejectRemarksInput').focus();
+      }, 150);
+    }
+
+    function setRemarkMode(mode) {
+      drawerRemarkMode = mode;
+      const commonBox = $('commonRemarksBox');
+      const indivBox = $('individualRemarksBox');
+      if (mode === 'common') {
+        if (commonBox) commonBox.style.display = 'block';
+        if (indivBox) indivBox.style.display = 'none';
+      } else {
+        if (commonBox) commonBox.style.display = 'none';
+        if (indivBox) indivBox.style.display = 'block';
+      }
+      validateDecisionModal();
+    }
+
+    function closeRejectModal() {
+      $('rejectModal').classList.remove('open');
+      pendingDecisionReq = null;
+    }
+
+    function validateDecisionModal() {
+      const btn = $('btnConfirmReject');
+      const err = $('rejectRemarksErr');
+      if (!pendingDecisionReq) return;
+
+      const unticked = (pendingDecisionReq.numbers || []).filter(n => !selectedNumIds.has(n.numberId));
+      if (!unticked.length) {
+        if (btn) btn.disabled = false;
+        if (err) err.style.display = 'none';
+        return;
+      }
+
+      let isValid = false;
+      if (drawerRemarkMode === 'common') {
+        const val = ($('rejectRemarksInput')?.value || '').trim();
+        isValid = val.length > 0;
+      } else {
+        const fields = document.querySelectorAll('.indiv-remark-field');
+        isValid = fields.length > 0 && Array.from(fields).every(f => (f.value || '').trim().length > 0);
+      }
+
+      if (btn) btn.disabled = !isValid;
+      if (err) err.style.display = isValid ? 'none' : 'block';
+    }
+
+    async function submitDecisionModal() {
+      if (!pendingDecisionReq) return;
+      const req = pendingDecisionReq;
+      const unticked = (req.numbers || []).filter(n => !selectedNumIds.has(n.numberId));
+      const commonVal = ($('rejectRemarksInput')?.value || '').trim();
+
+      const decisions = (req.numbers || []).map(n => {
+        if (selectedNumIds.has(n.numberId)) {
+          return {
+            numberId: n.numberId,
+            phoneE164: n.phoneE164,
+            status: 'approved',
+            remarks: ''
+          };
+        } else {
+          let rem = commonVal;
+          if (drawerRemarkMode === 'individual') {
+            const field = document.querySelector(`.indiv-remark-field[data-numid="${n.numberId}"]`);
+            if (field) rem = (field.value || '').trim();
+          }
+          return {
+            numberId: n.numberId,
+            phoneE164: n.phoneE164,
+            status: 'rejected',
+            remarks: rem || commonVal || 'Rejected by operator'
+          };
+        }
+      });
+
+      const tickedCount = (req.numbers || []).filter(n => selectedNumIds.has(n.numberId)).length;
+      let finalStatus = 'partially approved';
+      if (tickedCount === req.numbers.length) finalStatus = 'approved';
+      else if (tickedCount === 0) finalStatus = 'rejected';
+
+      const btn = $('btnConfirmReject');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = dotsLoader() + ' Saving decisions...';
+      }
+
+      try {
+        await api('/api/requests/' + req.requestId + '/status', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            decisions,
+            status: finalStatus,
+            remarks: commonVal
+          })
+        });
+
+        saveStatusOverride(req.requestId, finalStatus, commonVal, decisions);
+        closeRejectModal();
+        closeDrawer();
+
+        showToast(
+          finalStatus === 'approved' ? 'Brand Approved & Live' : (finalStatus === 'rejected' ? 'Brand Request Rejected' : 'Decisions Saved (Partially Approved)'),
+          `Request ${req.requestId}: ${tickedCount} numbers approved, ${unticked.length} numbers rejected with remarks.`,
+          finalStatus === 'approved' ? 'success' : 'warning',
+          6000
+        );
+
+        await load();
+      } catch (e) {
+        if (err) {
+          err.textContent = e.message;
+          err.style.display = 'block';
+        }
+        showToast('Error', e.message, 'error');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'Submit Decisions';
+        }
+      }
+    }
+
+    async function submitApproveAllNumbers() {
+      if (!selectedReq) return;
+      const req = selectedReq;
+      const decisions = (req.numbers || []).map(n => ({
+        numberId: n.numberId,
+        phoneE164: n.phoneE164,
+        status: 'approved',
+        remarks: ''
+      }));
+
+      try {
+        await api('/api/requests/' + req.requestId + '/status', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            decisions,
+            status: 'approved',
+            remarks: ''
+          })
+        });
+
+        saveStatusOverride(req.requestId, 'approved', '', decisions);
+        closeDrawer();
+        showToast(
+          'Brand Approved & Live',
+          `All ${decisions.length} numbers approved for ${req.brandName}. Caller ID is immediately live across the network.`,
+          'success',
+          6000
+        );
+        await load();
+      } catch (e) {
+        showToast('Error', e.message, 'error');
+      }
+    }
+
+    // Live VAT calculation
+    function feeHint() {
+      const v = parseFloat($('pPrice').value || '0');
+      const vat = v * 0.12;
+      $('feeHint').innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+          <span>Customer pays: <strong class="peso" style="color:var(--deep-navy);font-size:14px;">${peso(v + vat)}</strong> / month</span>
+          <span class="hint" style="color:var(--text-muted);">(${peso(v)} fee + 12% VAT ${peso(vat)})</span>
+        </div>
+      `;
+    }
+
+    // Filter Chips
+    function setReqFilter(f, btn) {
+      activeFilter = f;
+      document.querySelectorAll('.filter-bar .filter-chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filterRequests();
+    }
+
+    function filterRequests() {
+      const query = ($('reqSearch')?.value || '').toLowerCase().trim();
+
+      let filtered = allRequests.filter(r => {
+        if (activeFilter !== 'all' && r.status !== activeFilter) return false;
+
+        if (!query) return true;
+        const inBank = (r.brandName || '').toLowerCase().includes(query);
+        const inId = (r.requestId || '').toLowerCase().includes(query);
+        const inDept = (r.departments || '').toLowerCase().includes(query);
+        const inReason = (r.callReason || r.tagline || '').toLowerCase().includes(query);
+        const inNums = (r.numbers || []).some(n => (n.phoneDisplay || '').includes(query) || (n.phoneE164 || '').includes(query));
+        return inBank || inId || inDept || inReason || inNums;
+      });
+      renderRequestsTable(filtered);
+    }
+
+    function renderRequestsTable(reqs) {
+      const tbody = $('reqsTableBody');
+
+      if (!reqs.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="empty-state">
+              <div class="empty-state-icon">📋</div>
+              <div class="empty-state-title">No brand requests found</div>
+              <div class="empty-state-desc">There are no brand requests matching your current filter.</div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = reqs.map(r => {
+        const logo = r.logoUrl
+          ? `<img src="${esc(r.logoUrl)}" alt="Logo" style="width:32px;height:32px;object-fit:contain;border-radius:6px;border:1px solid var(--border);" onerror="this.onerror=null;this.parentElement.innerHTML='<div style=\\'width:32px;height:32px;border-radius:6px;background:#F0F3FF;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#0000FF;\\'>${esc(initials(r.brandName))}</div>';">`
+          : '';
+        const dateStr = r.createdAt ? new Date(r.createdAt).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
+        const reason = r.callReason || r.tagline || '';
+
+        return `
+          <tr class="clickable" onclick="openRequestDrawer('${esc(r.requestId)}')">
+            <td><code style="font-weight:600;font-size:12px;">${esc(r.requestId)}</code></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px;">
+                ${logo}
+                <div>
+                  <div style="font-weight:600;color:var(--deep-navy);">${esc(r.brandName)}</div>
+                  ${reason ? `<div class="hint" style="font-style:italic;color:var(--text-secondary);">"${esc(reason)}"</div>` : ''}
+                </div>
+              </div>
+            </td>
+            <td><span class="badge" style="background:#F0F3FF;color:#0000FF;">${esc(r.packageName || 'Package')}</span></td>
+            <td><strong>${r.numbersCount || (r.numbers && r.numbers.length) || 0}</strong> numbers</td>
+            <td class="peso" style="font-weight:600;">${peso(r.totalPHP)}</td>
+            <td class="hint">${esc(dateStr)}</td>
+            <td>
+              ${statusBadge(r.status)}
+              ${r.status === 'rejected' && r.remarks ? `<div class="hint" style="color:var(--status-rejected);font-size:10.5px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(r.remarks)}">Note: ${esc(r.remarks)}</div>` : ''}
+            </td>
+            <td>
+              <button class="btn sm" onclick="event.stopPropagation();openRequestDrawer('${esc(r.requestId)}')">
+                Review &rarr;
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    let selectedNumIds = new Set();
+    let drawerNumSearch = '';
+    let drawerDeptFilter = 'all';
+    let drawerStatusFilter = 'all';
+    let drawerPage = 1;
+    let drawerPageSize = 25;
+
+    function getFilteredDrawerNumbers() {
+      if (!selectedReq || !selectedReq.numbers) return [];
+      const query = drawerNumSearch.toLowerCase().trim();
+      return selectedReq.numbers.filter(n => {
+        if (drawerDeptFilter !== 'all' && n.department !== drawerDeptFilter) return false;
+        if (drawerStatusFilter !== 'all' && (n.status || 'pending') !== drawerStatusFilter) return false;
+        if (!query) return true;
+        const inPhone = (n.phoneDisplay || '').toLowerCase().includes(query) || (n.phoneE164 || '').toLowerCase().includes(query);
+        const inDept = (n.department || '').toLowerCase().includes(query);
+        const inType = (n.numberType || '').toLowerCase().includes(query);
+        const inRem = (n.remarks || '').toLowerCase().includes(query);
+        return inPhone || inDept || inType || inRem;
+      });
+    }
+
+    function toggleSelectAllNumbers(checked) {
+      const filtered = getFilteredDrawerNumbers();
+      filtered.forEach(n => {
+        if (checked) selectedNumIds.add(n.numberId);
+        else selectedNumIds.delete(n.numberId);
+      });
+      renderDrawerNumbersSection();
+    }
+
+    function toggleNumberSelection(numId) {
+      if (selectedNumIds.has(numId)) selectedNumIds.delete(numId);
+      else selectedNumIds.add(numId);
+      renderDrawerNumbersSection();
+    }
+
+    function onDrawerSearch(val) {
+      drawerNumSearch = val;
+      drawerPage = 1;
+      renderDrawerNumbersSection();
+    }
+
+    function onDrawerDeptFilter(val) {
+      drawerDeptFilter = val;
+      drawerPage = 1;
+      renderDrawerNumbersSection();
+    }
+
+    function onDrawerStatusFilter(val) {
+      drawerStatusFilter = val;
+      drawerPage = 1;
+      renderDrawerNumbersSection();
+    }
+
+    function onDrawerPageSize(val) {
+      drawerPageSize = val === 'all' ? 99999 : parseInt(val, 10);
+      drawerPage = 1;
+      renderDrawerNumbersSection();
+    }
+
+    function changeDrawerPage(delta) {
+      const filtered = getFilteredDrawerNumbers();
+      const totalPages = Math.max(1, Math.ceil(filtered.length / drawerPageSize));
+      const next = drawerPage + delta;
+      if (next >= 1 && next <= totalPages) {
+        drawerPage = next;
+        renderDrawerNumbersSection();
+      }
+    }
+
+    function updateDrawerFooter() {
+      const footer = $('drawerFooter');
+      if (!footer || !selectedReq) return;
+      const total = (selectedReq.numbers || []).length;
+      const ticked = selectedNumIds.size;
+      const unticked = total - ticked;
+
+      if (ticked === total) {
+        footer.innerHTML = `
+          <div style="flex:1;">
+            <span class="badge approved" style="font-size:12px;padding:4px 10px;">All ${total} Numbers Selected</span>
+          </div>
+          <button class="ok" onclick="submitApproveAllNumbers()" style="padding:10px 24px;font-weight:600;">
+            ✓ Approve All Numbers (${total})
+          </button>
+          <button class="btn no" onclick="openRejectSelectedModal()" id="btnRejectSelected" style="margin-left:8px;">Reject Selected (${ticked})</button>
+          <button class="btn sm" onclick="closeDrawer()">Cancel</button>
+        `;
+      } else if (ticked === 0) {
+        footer.innerHTML = `
+          <div style="flex:1;">
+            <span class="badge rejected" style="font-size:12px;padding:4px 10px;">0 Selected &middot; Full Rejection</span>
+          </div>
+          <button class="no" onclick="openDecisionModal()" style="padding:10px 22px;font-weight:600;">
+            ✕ Reject Request (Remarks Required)
+          </button>
+          <button class="btn sm" onclick="closeDrawer()">Cancel</button>
+        `;
+      } else {
+        footer.innerHTML = `
+          <div style="flex:1;">
+            <span class="badge partially-approved" style="font-size:12px;padding:4px 10px;">${ticked} Approve, ${unticked} Reject</span>
+          </div>
+          <button class="ok" onclick="openDecisionModal()" style="padding:10px 22px;font-weight:600;background:var(--primary-blue);">
+            Submit Decisions (${ticked} Approve, ${unticked} Reject) &rarr;
+          </button>
+          <button class="btn no" onclick="openRejectSelectedModal()" id="btnRejectSelected" style="margin-left:8px;">Reject Selected (${ticked})</button>
+          <button class="btn sm" onclick="closeDrawer()">Cancel</button>
+        `;
+      }
+    }
+
+    function renderDrawerNumbersSection() {
+      const wrap = $('drawerNumbersContainer');
+      if (!wrap || !selectedReq) return;
+
+      const allNums = selectedReq.numbers || [];
+      const total = allNums.length;
+      const filtered = getFilteredDrawerNumbers();
+      const tickedTotal = selectedNumIds.size;
+      const tickedFiltered = filtered.filter(n => selectedNumIds.has(n.numberId)).length;
+
+      // Unique departments for filter dropdown
+      const depts = Array.from(new Set(allNums.map(n => n.department).filter(Boolean))).sort();
+
+      // Pagination
+      const totalPages = Math.max(1, Math.ceil(filtered.length / drawerPageSize));
+      if (drawerPage > totalPages) drawerPage = totalPages;
+      const startIdx = (drawerPage - 1) * drawerPageSize;
+      const pagedNums = filtered.slice(startIdx, startIdx + drawerPageSize);
+
+      let countHtml = `<strong>${tickedTotal} of ${total}</strong> numbers selected for approval`;
+      if (filtered.length < total) {
+        countHtml += ` &middot; <span style="color:var(--primary-blue);font-weight:600;">(${tickedFiltered} of ${filtered.length} filtered selected)</span>`;
+      }
+
+      const rowsHtml = pagedNums.length ? pagedNums.map(n => {
+        const isTicked = selectedNumIds.has(n.numberId);
+        const statusStr = n.status || 'pending';
+        return `
+          <tr style="cursor:pointer;${isTicked ? 'background:#F0F7FF;' : ''}" onclick="toggleNumberSelection('${esc(n.numberId)}')">
+            <td style="width:36px;text-align:center;" onclick="event.stopPropagation()">
+              <input type="checkbox" ${isTicked ? 'checked' : ''} onchange="toggleNumberSelection('${esc(n.numberId)}')" style="cursor:pointer;width:15px;height:15px;">
+            </td>
+            <td><strong style="color:var(--deep-navy);">${esc(n.department)}</strong></td>
+            <td class="peso" style="font-weight:600;color:var(--deep-navy);">${esc(n.phoneDisplay || n.phoneE164)}</td>
+            <td><span class="chip" style="font-size:10.5px;">${esc(n.numberType || 'Mobile')}</span></td>
+            <td>${statusBadge(statusStr)}</td>
+            <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+              ${statusStr === 'rejected' && n.remarks 
+                ? `<span class="hint" style="color:var(--status-rejected);font-size:11px;" title="${esc(n.remarks)}">Note: ${esc(n.remarks)}</span>` 
+                : (statusStr === 'approved' 
+                    ? `<span class="hint" style="color:var(--status-approved);font-size:11px;">✓ Active</span>` 
+                    : `<span class="hint" style="font-size:11px;color:var(--text-muted);">${isTicked ? 'Will approve' : 'Will reject'}</span>`)}
+            </td>
+          </tr>
+        `;
+      }).join('') : `
+        <tr>
+          <td colspan="6" style="text-align:center;padding:24px;color:var(--text-muted);">
+            No numbers match the current search or filters.
+          </td>
+        </tr>
+      `;
+
+      wrap.innerHTML = `
+        <div style="background:#FFFFFF;border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;">
+          <!-- Controls Bar: Search, Dept, Status, Page Size -->
+          <div style="padding:10px 12px;background:#F8FAFD;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+            <div style="flex:1;min-width:180px;">
+              <input type="text" value="${esc(drawerNumSearch)}" placeholder="Search phone, dept, remarks..." style="width:100%;font-size:12px;padding:6px 10px;height:32px;" oninput="onDrawerSearch(this.value)">
+            </div>
+            <div style="width:140px;">
+              <select style="width:100%;font-size:12px;padding:5px 8px;height:32px;" onchange="onDrawerDeptFilter(this.value)">
+                <option value="all" ${drawerDeptFilter === 'all' ? 'selected' : ''}>All Depts (${depts.length})</option>
+                ${depts.map(d => `<option value="${esc(d)}" ${drawerDeptFilter === d ? 'selected' : ''}>${esc(d)}</option>`).join('')}
+              </select>
+            </div>
+            <div style="width:120px;">
+              <select style="width:100%;font-size:12px;padding:5px 8px;height:32px;" onchange="onDrawerStatusFilter(this.value)">
+                <option value="all" ${drawerStatusFilter === 'all' ? 'selected' : ''}>All Statuses</option>
+                <option value="pending" ${drawerStatusFilter === 'pending' ? 'selected' : ''}>Pending</option>
+                <option value="approved" ${drawerStatusFilter === 'approved' ? 'selected' : ''}>Approved</option>
+                <option value="rejected" ${drawerStatusFilter === 'rejected' ? 'selected' : ''}>Rejected</option>
+              </select>
+            </div>
+            <div style="width:90px;">
+              <select style="width:100%;font-size:12px;padding:5px 8px;height:32px;" onchange="onDrawerPageSize(this.value)">
+                <option value="10" ${drawerPageSize === 10 ? 'selected' : ''}>10 / page</option>
+                <option value="25" ${drawerPageSize === 25 ? 'selected' : ''}>25 / page</option>
+                <option value="50" ${drawerPageSize === 50 ? 'selected' : ''}>50 / page</option>
+                <option value="100" ${drawerPageSize === 100 ? 'selected' : ''}>100 / page</option>
+                <option value="all" ${drawerPageSize >= 99999 ? 'selected' : ''}>Show all</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Live Selection Count Bar -->
+          <div style="padding:8px 12px;background:#F0F4FA;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:12px;">
+            <div>${countHtml}</div>
+            <div class="hint" style="font-size:11px;">Ticked = Approve &middot; Unticked = Reject</div>
+          </div>
+
+          <!-- Table with Sticky Header -->
+          <div class="table-wrap" style="max-height:280px;overflow-y:auto;margin:0;">
+            <table class="data-table" style="font-size:12px;margin:0;">
+              <thead style="position:sticky;top:0;background:#F8FAFD;z-index:2;">
+                <tr>
+                  <th style="width:36px;text-align:center;">
+                    <input type="checkbox" id="selectAllNumbers" onchange="toggleSelectAllNumbers(this.checked)" style="cursor:pointer;width:15px;height:15px;" title="Select all ${filtered.length < total ? filtered.length + ' filtered' : 'numbers'}">
+                  </th>
+                  <th>Department</th>
+                  <th>Phone Number</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Note / Decision</th>
+                </tr>
+              </thead>
+              <tbody>${rowsHtml}</tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Bar -->
+          <div style="padding:8px 12px;background:#F8FAFD;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--text-muted);">
+            <div>
+              Showing <strong>${filtered.length ? startIdx + 1 : 0}</strong> - <strong>${Math.min(startIdx + drawerPageSize, filtered.length)}</strong> of <strong>${filtered.length}</strong> filtered
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <button type="button" class="btn sm" onclick="changeDrawerPage(-1)" ${drawerPage <= 1 ? 'disabled' : ''} style="padding:2px 8px;font-size:11px;">&larr; Prev</button>
+              <span>Page <strong>${drawerPage}</strong> of <strong>${totalPages}</strong></span>
+              <button type="button" class="btn sm" onclick="changeDrawerPage(1)" ${drawerPage >= totalPages ? 'disabled' : ''} style="padding:2px 8px;font-size:11px;">Next &rarr;</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Set indeterminate state on select all checkbox
+      const selectAll = $('selectAllNumbers');
+      if (selectAll) {
+        selectAll.checked = filtered.length > 0 && tickedFiltered === filtered.length;
+        selectAll.indeterminate = tickedFiltered > 0 && tickedFiltered < filtered.length;
+      }
+
+      updateDrawerFooter();
+    }
+
+    // Open Drawer Side Panel
+    function openRequestDrawer(requestId) {
+      const r = allRequests.find(x => x.requestId === requestId);
+      if (!r) return;
+      selectedReq = r;
+
+      // Initialize Selection state
+      selectedNumIds.clear();
+      (r.numbers || []).forEach(n => {
+        if (r.status === 'approved') {
+          selectedNumIds.add(n.numberId);
+        } else if (r.status === 'rejected') {
+          // unticked
+        } else {
+          // pending or partially approved: approved & pending numbers are ticked
+          if (n.status === 'approved' || n.status === 'pending' || !n.status) {
+            selectedNumIds.add(n.numberId);
+          }
+        }
+      });
+
+      drawerNumSearch = '';
+      drawerDeptFilter = 'all';
+      drawerStatusFilter = 'all';
+      drawerPage = 1;
+      drawerPageSize = 25;
+
+      $('drawerBankName').textContent = r.brandName;
+      $('drawerReqId').textContent = r.requestId + ' · ' + (r.packageName || 'Package');
+
+      const logoHtml = r.logoUrl
+        ? `
+          <div style="display:flex;align-items:center;gap:16px;padding:12px;background:#F8FAFD;border:1px solid var(--border);border-radius:var(--radius-md);">
+            <div style="width:64px;height:64px;border-radius:var(--radius-sm);background:#FFFFFF;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none;">
+              <img src="${esc(r.logoUrl)}" alt="Logo" style="max-width:100%;max-height:100%;object-fit:contain;" onerror="this.onerror=null;this.src='/shared/assets/mobileum-logo.png';">
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:600;font-size:13px;color:var(--deep-navy);">${esc(r.fileName || 'Brand Logo')}</div>
+              <div class="hint">${r.sizeBytes ? Math.max(1, Math.round(r.sizeBytes / 1024)) + ' KB' : ''} &middot; ${esc(r.mimeType || 'Image')}</div>
+              <a href="${esc(r.logoUrl)}" target="_blank" class="btn sm" style="margin-top:6px;display:inline-flex;">Open Original Asset &nearr;</a>
+            </div>
+          </div>
+        `
+        : '';
+
+      const callReason = r.callReason || r.tagline || '';
+
+      const previewHtml = r.numbers && r.numbers[0]
+        ? callerCard({
+            brandName: r.brandName,
+            callReason: callReason,
+            tagline: callReason,
+            logoUrl: r.logoUrl || null,
+            department: r.numbers[0].department,
+            display: r.numbers[0].phoneDisplay,
+            verified: r.status === 'approved'
+          })
+        : '';
+
+      const remarksHtml = (r.remarks)
+        ? `
+          <div style="margin-bottom:18px;padding:14px;background:#FEF2F2;border:1px solid #FCA5A5;border-radius:var(--radius-md);">
+            <div style="display:flex;align-items:center;gap:6px;color:#DC2626;font-weight:700;font-size:13px;margin-bottom:4px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+              Operator Remarks
+            </div>
+            <div style="color:#991B1B;font-size:13px;line-height:1.4;white-space:pre-wrap;background:#FFFFFF;padding:8px 12px;border-radius:4px;border:1px solid #FECACA;margin-top:6px;">${esc(r.remarks)}</div>
+          </div>
+        `
+        : '';
+
+      $('drawerContent').innerHTML = `
+        <div style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;">
+          <div>${statusBadge(r.status)}</div>
+          <span class="hint">Submitted: ${r.createdAt ? new Date(r.createdAt).toLocaleString('en-PH') : '-'}</span>
+        </div>
+
+        ${remarksHtml}
+
+        <div style="margin-bottom:20px;">
+          <h4 style="margin-bottom:8px;">Brand Identity Elements</h4>
+          <div style="margin-bottom:10px;padding:12px;background:#F8FAFD;border-radius:var(--radius-md);border:1px solid var(--border);">
+            <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;">Brand Name</div>
+            <div style="font-size:16px;font-weight:700;color:var(--deep-navy);margin-bottom:8px;">${esc(r.brandName)}</div>
+            <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;">Call Reason</div>
+            <div style="font-size:13.5px;color:var(--text-primary);font-style:italic;">"${esc(callReason || 'None specified')}"</div>
+          </div>
+          ${logoHtml}
+        </div>
+
+        <!-- Numbers Decision Section with Checkbox, Filters & Pagination -->
+        <div style="margin-bottom:20px;">
+          <h4 style="margin-bottom:8px;">Calling Numbers &amp; Decisions (${(r.numbers || []).length})</h4>
+          <div id="drawerNumbersContainer"></div>
+        </div>
+
+        <div style="margin-bottom:20px;">
+          <h4 style="margin-bottom:8px;">Monthly Fee Breakdown (12% VAT)</h4>
+          <div style="padding:14px;background:#F8FAFD;border-radius:var(--radius-md);border:1px solid var(--border);font-size:13px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+              <span class="hint">Base Plan Fee:</span>
+              <span class="peso font-weight:600;">${peso(r.monthlyFeePHP)}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+              <span class="hint">Philippine VAT (12%):</span>
+              <span class="peso font-weight:600;">${peso(r.vatPHP)}</span>
+            </div>
+            <div style="border-top:1px solid var(--border);padding-top:8px;display:flex;justify-content:space-between;font-weight:700;font-size:15px;color:var(--deep-navy);">
+              <span>Enterprise Total:</span>
+              <span class="peso" style="color:var(--primary-blue);">${peso(r.totalPHP)} / mo</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h4 style="margin-bottom:8px;">Android Caller-ID Display Preview</h4>
+          ${previewHtml}
+        </div>
+      `;
+
+      renderDrawerNumbersSection();
+      $('reqDrawerBackdrop').classList.add('open');
+      $('reqDrawer').classList.add('open');
+    }
+
+    function closeDrawer() {
+      $('reqDrawerBackdrop').classList.remove('open');
+      $('reqDrawer').classList.remove('open');
+      selectedReq = null;
+    }
+
+    // Render Packages Cards
+    function renderPackagesTable() {
+      const displayPkgs = allPackages;
+      const countEl = $('badge_pkg_count');
+      if (countEl) countEl.textContent = allPackages.length + ' active';
+
+      const container = $('pkgsCardsContainer');
+      if (!container) return;
+
+      if (!displayPkgs.length) {
+        container.innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1; padding: 40px 20px;">
+            <div class="empty-state-icon">📦</div>
+            <div class="empty-state-title">No published packages</div>
+            <div class="empty-state-desc">Create your first package using the form on the left to make it available to enterprises.</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = displayPkgs.map(p => {
+        const duration = p.duration || '30 Days';
+        const calls = p.brandedCalls ? Number(p.brandedCalls).toLocaleString() : '50,000';
+        const fee = PH.fee(p.pricePHP || 0);
+        const hasBrand = p.brand === true || p.brand === 'true';
+        const hasTag = p.callReason === true || p.callReason === 'true' || p.tagline === true || p.tagline === 'true';
+        const hasLogo = p.logoIncluded === true || p.logoIncluded === 'true';
+
+        return `
+          <div class="pkg-card" id="pkg_card_${esc(p.packageId)}">
+            <div class="pkg-card-top">
+              <div>
+                <h3 class="pkg-card-name">${esc(p.name)}</h3>
+                <div class="hint" style="font-size:12px;margin-top:2px;">Caller ID Subscription Tier</div>
+              </div>
+              <div class="pkg-card-badges">
+                <span class="chip" style="font-size:11px;font-weight:600;">${esc(duration)}</span>
+                <span class="badge approved" style="font-size:11px;padding:3px 8px;">Active</span>
+              </div>
+            </div>
+
+            <div class="pkg-card-metrics">
+              <div class="pkg-card-metric-item">
+                <span class="pkg-card-metric-label">Capacity</span>
+                <span class="pkg-card-metric-value">${p.capacity} Numbers</span>
+              </div>
+              <div class="pkg-card-metric-item">
+                <span class="pkg-card-metric-label">Branded Calls</span>
+                <span class="pkg-card-metric-value">${calls}</span>
+              </div>
+            </div>
+
+            <div class="pkg-card-price-box">
+              <div class="pkg-card-price-main">${peso(fee.total)} <span style="font-size:12px;font-weight:500;color:var(--text-muted);">/ mo</span></div>
+              <div class="pkg-card-price-sub">Base: ${peso(fee.fee)} + 12% VAT (${peso(fee.vat)})</div>
+            </div>
+
+            <div>
+              <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;">Included Features</div>
+              <div class="pkg-card-features">
+                ${hasBrand ? '<span class="pkg-feature-chip">✓ Brand Name</span>' : ''}
+                ${hasTag ? '<span class="pkg-feature-chip">✓ Tagline Support</span>' : ''}
+                ${hasLogo ? '<span class="pkg-feature-chip">✓ Logo Display</span>' : ''}
+                ${!hasBrand && !hasTag && !hasLogo ? '<span class="hint" style="font-size:11px;">Standard Number Routing Only</span>' : ''}
+              </div>
+            </div>
+
+            <div class="pkg-card-actions">
+              <button type="button" class="btn sm" onclick="editPackage('${esc(p.packageId)}')">✎ Edit</button>
+              <button type="button" class="btn sm no" onclick="removePackage('${esc(p.packageId)}')">✕ Remove</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Render Numbers Table with Remove Option
+    function removeOperatorNumber(e164) {
+      showConfirmModal({
+        title: 'Remove Number',
+        message: `Are you sure you want to remove number ${e164} from view?`,
+        confirmText: 'Remove',
+        confirmClass: 'no',
+        onConfirm: () => {
+          addToSharedList('deleted_numbers', e164);
+          showToast('Number Removed', `Number ${e164} removed from list.`, 'info');
+          renderNumbersTable();
+        }
+      });
+    }
+
+    function restoreOperatorNumber(e164) {
+      removeFromSharedList('deleted_numbers', e164);
+      showToast('Number Restored', `Number ${e164} restored.`, 'success');
+      renderNumbersTable();
+    }
+
+    function toggleDeletedOperatorNumbers() {
+      showDeletedOpNums = !showDeletedOpNums;
+      const btn = $('btnToggleDeletedOpNums');
+      if (btn) btn.textContent = showDeletedOpNums ? 'Show Active Numbers' : 'Show Removed';
+      renderNumbersTable();
+    }
+
+    function renderNumbersTable() {
+      const tbody = $('allNumbersTableBody');
+      const query = ($('numSearch')?.value || '').toLowerCase().trim();
+      const deletedNums = getSharedList('deleted_numbers');
+
+      let filtered = allNumbers.filter(n => {
+        const isDel = deletedNums.includes(n.phoneE164);
+        if (showDeletedOpNums ? !isDel : isDel) return false;
+
+        if (!query) return true;
+        return (n.phoneDisplay || '').includes(query) ||
+               (n.phoneE164 || '').includes(query) ||
+               (n.department || '').toLowerCase().includes(query) ||
+               (n.brandName || '').toLowerCase().includes(query);
+      });
+
+      if (!filtered.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="empty-state">
+              <div class="empty-state-icon">📞</div>
+              <div class="empty-state-title">${showDeletedOpNums ? 'No removed numbers' : 'No registered numbers'}</div>
+              <div class="empty-state-desc">${showDeletedOpNums ? 'No numbers currently removed.' : 'Approved numbers will automatically appear in this network registry.'}</div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(n => {
+        const isDel = deletedNums.includes(n.phoneE164);
+        return `
+          <tr>
+            <td><strong class="peso">${esc(n.phoneDisplay)}</strong> <span class="hint" style="font-size:11px;">(${esc(n.phoneE164)})</span></td>
+            <td><span class="chip" style="font-size:11px;">${esc(n.numberType || 'Phone')}</span></td>
+            <td>${esc(n.department)}</td>
+            <td><strong style="color:var(--deep-navy);">${esc(n.brandName)}</strong></td>
+            <td><span class="badge ${esc(n.status)}">${esc(n.status)}</span></td>
+            <td>
+              ${isDel ? `
+                <button class="btn sm ok" onclick="restoreOperatorNumber('${esc(n.phoneE164)}')">Restore</button>
+              ` : `
+                <button class="btn sm no" onclick="removeOperatorNumber('${esc(n.phoneE164)}')">Remove</button>
+              `}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Render Dashboard Activity
+    function renderDashboardActivity() {
+      const container = $('dash_activity');
+      const deletedReqs = getSharedList('deleted_requests');
+      const activeRequests = allRequests.filter(r => !deletedReqs.includes(r.requestId));
+
+      if (!activeRequests.length) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">⚡</div>
+            <div class="empty-state-title">No recent activity</div>
+            <div class="empty-state-desc">When enterprises submit caller ID registrations, they will appear here.</div>
+          </div>
+        `;
+        return;
+      }
+
+      const recent = activeRequests.slice(0, 5);
+      container.innerHTML = `
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Bank / Enterprise</th>
+              <th>Package</th>
+              <th>Departments</th>
+              <th>Total Fee</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${recent.map(r => `
+              <tr class="clickable" onclick="openRequestDrawer('${esc(r.requestId)}')">
+                <td><strong style="color:var(--deep-navy);">${esc(r.brandName)}</strong></td>
+                <td><span class="badge" style="background:#F0F3FF;color:#0000FF;">${esc(r.packageName || 'Package')}</span></td>
+                <td>${esc(r.departments)}</td>
+                <td class="peso"><strong>${peso(r.totalPHP)}</strong></td>
+                <td><span class="badge ${esc(r.status)}">${esc(r.status)}</span></td>
+                <td>
+                  <button class="btn sm" onclick="event.stopPropagation();openRequestDrawer('${esc(r.requestId)}')">Review</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function updateStatCounts() {
+      const deletedNums = getSharedList('deleted_numbers');
+
+      const activeReqs = allRequests;
+      const activePkgs = allPackages;
+      const activeNums = allNumbers.filter(n => !deletedNums.includes(n.phoneE164));
+
+      const pendingCount = activeReqs.filter(r => r.status === 'pending').length;
+      const partialCount = activeReqs.filter(r => r.status === 'partially approved').length;
+      const approvedCount = activeReqs.filter(r => r.status === 'approved').length;
+      const rejectedCount = activeReqs.filter(r => r.status === 'rejected').length;
+
+      $('stat_pkgs').textContent = activePkgs.length;
+      $('stat_pending').textContent = pendingCount;
+      $('stat_approved').textContent = approvedCount;
+      $('stat_numbers').textContent = activeNums.length;
+
+      // Update Nav Badges
+      const badgeReqs = $('nav_badge_reqs');
+      if (badgeReqs) {
+        badgeReqs.style.display = pendingCount > 0 ? 'inline-flex' : 'none';
+        badgeReqs.className = 'badge pending';
+        badgeReqs.textContent = pendingCount;
+      }
+
+      const badgePkgs = $('nav_badge_pkgs');
+      if (badgePkgs) {
+        badgePkgs.style.display = activePkgs.length > 0 ? 'inline-flex' : 'none';
+        badgePkgs.className = 'badge approved';
+        badgePkgs.textContent = activePkgs.length;
+      }
+
+      // Filter Counts
+      if ($('cnt_all')) $('cnt_all').textContent = activeReqs.length;
+      if ($('cnt_pending')) $('cnt_pending').textContent = pendingCount;
+      if ($('cnt_partial')) $('cnt_partial').textContent = partialCount;
+      if ($('cnt_approved')) $('cnt_approved').textContent = approvedCount;
+      if ($('cnt_rejected')) $('cnt_rejected').textContent = rejectedCount;
+    }
+
+    // Main Polling & Load Loop
+    async function load() {
+      try {
+        info = await api('/api/info');
+        $('lEn').href = info.enterpriseUrl;
+        $('lCu').href = info.customerUrl;
+        dbStatus($('dbstat'), info);
+
+        await migrateLegacyPackageRemovals();
+        const [pk, rq, numRes] = await Promise.all([
+          api('/api/packages'),
+          api('/api/requests'),
+          api('/api/numbers')
+        ]);
+
+        allPackages = mergePackages(pk);
+        // Merge server requests with client-persisted requests so nothing disappears across lambda containers
+        allRequests = mergeRequests(rq).slice().reverse();
+        allNumbers = mergeNumbers(numRes);
+
+        // Check for newly arrived requests to trigger toast
+        if (!isFirstLoad) {
+          allRequests.forEach(r => {
+            if (!knownRequestIds.has(r.requestId)) {
+              showToast('New Registration Request', `New request from ${r.brandName} (${r.numbersCount || 1} numbers)`, 'info', 6000);
+            }
+          });
+        }
+        knownRequestIds = new Set(allRequests.map(r => r.requestId));
+        isFirstLoad = false;
+
+        updateStatCounts();
+        renderPackagesTable();
+        filterRequests();
+        renderNumbersTable();
+        renderDashboardActivity();
+
+      } catch (e) {
+        $('dbstat').innerHTML = '<span class="err">Cannot reach the server (Check network / server.js)</span>';
+      }
+    }
+
+    if (syncChannel) {
+      syncChannel.onmessage = e => {
+        if (e.data && (
+          e.data.type === 'sync_update' ||
+          e.data.type === 'status_override' ||
+          e.data.type === 'package_update' ||
+          e.data.type === 'package_delete'
+        )) {
+          load();
+        }
+      };
+    }
+
+    // -------- Reject Selected Numbers --------
+    function openRejectSelectedModal() {
+      const ticked = selectedNumIds ? Array.from(selectedNumIds) : [];
+      if (!ticked.length) { showToast('No Numbers Selected', 'Tick at least one number to reject.', 'warning'); return; }
+      const el = document.getElementById('rejectSelectedModal');
+      document.getElementById('rejectSelectedCount').textContent = `Rejecting ${ticked.length} selected number(s).`;
+      document.getElementById('rejectSelectedRemark').value = '';
+      document.getElementById('rejectSelectedErr').style.display = 'none';
+      el.style.display = 'flex';
+    }
+    function closeRejectSelectedModal() {
+      document.getElementById('rejectSelectedModal').style.display = 'none';
+    }
+    async function confirmRejectSelected() {
+      const remark = document.getElementById('rejectSelectedRemark').value.trim();
+      if (!remark) { document.getElementById('rejectSelectedErr').style.display = 'block'; return; }
+      if (!selectedReq || !selectedNumIds || !selectedNumIds.size) return;
+      const decisions = (selectedReq.numbers || [])
+        .filter(n => selectedNumIds.has(n.numberId))
+        .map(n => ({ numberId: n.numberId, phoneE164: n.phoneE164, status: 'rejected', remarks: remark }));
+      closeRejectSelectedModal();
+      try {
+        const result = await api(`/api/requests/${selectedReq.requestId}/decision`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ decisions, requestRemarks: remark })
+        });
+        showToast('Numbers Rejected', `${decisions.length} number(s) rejected.`, 'info');
+        await load();
+        closeDrawer();
+      } catch (e) {
+        showToast('Error', e.message, 'error');
+      }
+    }
+
+    // -------- Reset Demo Data --------
+    function openResetDemoModal() {
+      document.getElementById('resetDemoModal').style.display = 'flex';
+    }
+    async function confirmResetDemo() {
+      document.getElementById('resetDemoModal').style.display = 'none';
+      try {
+        await api('/api/admin/reset-demo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ confirm: 'RESET' })
+        });
+        showToast('Demo Reset', 'All requests and numbers cleared. Packages preserved.', 'success');
+        await load();
+      } catch (e) {
+        showToast('Error', e.message, 'error');
+      }
+    }
+
+    $('pPrice').oninput = feeHint;
+    feeHint();
+    load();
+    setInterval(load, 3000);
+  </script>
+
+  <!-- Modal: Reject / Unticked Numbers Remarks -->
+  <div id="rejectModal" class="confirm-modal-backdrop">
+    <div class="confirm-modal-box" style="max-width:560px;max-height:90vh;display:flex;flex-direction:column;">
+      <div class="confirm-modal-header">
+        <h3 class="confirm-modal-title" style="color:var(--status-rejected);">Rejection Remarks Required</h3>
+        <button type="button" class="confirm-modal-close" onclick="closeRejectModal()">&times;</button>
+      </div>
+      <div class="confirm-modal-body" style="overflow-y:auto;flex:1;">
+        <div style="margin-bottom:8px;font-size:13px;color:var(--deep-navy);">
+          Enterprise: <strong id="rejectModalBrand">-</strong>
+        </div>
+        <div id="rejectModalSummary"></div>
+        <p class="hint" style="margin-bottom:14px;line-height:1.4;">
+          Unticked numbers cannot be submitted without remarks. The enterprise will see these remarks in their portal to fix and re-submit.
+        </p>
+
+        <!-- Mode Toggle: Common Remark vs Individual Remarks -->
+        <div style="margin-bottom:14px;padding:10px 12px;background:#F8FAFD;border:1px solid var(--border);border-radius:var(--radius-sm);">
+          <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;">Remark Application Option</div>
+          <div style="display:flex;gap:18px;font-size:12.5px;flex-wrap:wrap;">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:500;">
+              <input type="radio" id="remarkModeCommon" name="remarkModeChoice" value="common" checked onchange="setRemarkMode('common')">
+              One common remark for all unticked numbers
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:500;">
+              <input type="radio" id="remarkModeIndiv" name="remarkModeChoice" value="individual" onchange="setRemarkMode('individual')">
+              Remarks per number
+            </label>
+          </div>
+        </div>
+
+        <!-- 1. Common Remarks Input -->
+        <div id="commonRemarksBox" class="form-group" style="margin-bottom:0;">
+          <label for="rejectRemarksInput">Common Rejection Remarks <span class="req-star">*</span></label>
+          <textarea id="rejectRemarksInput" rows="3" placeholder="e.g. Number not registered under enterprise name, or call reason invalid. Please update and resubmit." oninput="validateDecisionModal()"></textarea>
+        </div>
+
+        <!-- 2. Individual Remarks Inputs -->
+        <div id="individualRemarksBox" style="display:none;">
+          <label style="display:block;margin-bottom:8px;font-size:12px;font-weight:600;color:var(--deep-navy);">Individual Remarks per Number <span class="req-star">*</span></label>
+          <div id="individualRemarksList" style="max-height:220px;overflow-y:auto;padding-right:4px;"></div>
+        </div>
+
+        <div id="rejectRemarksErr" class="field-error" style="display:none;margin-top:8px;">Rejection remarks are mandatory before submission.</div>
+      </div>
+      <div class="confirm-modal-footer">
+        <button type="button" class="btn sm" onclick="closeRejectModal()">Cancel</button>
+        <button type="button" class="btn sm no" id="btnConfirmReject" onclick="submitDecisionModal()" disabled style="font-weight:600;">Confirm &amp; Submit Decisions</button>
+      </div>
+    </div>
+  </div>
+  <!-- Reject Selected Numbers Modal -->
+  <div class="confirm-modal-backdrop" id="rejectSelectedModal" style="display:none;">
+    <div class="confirm-modal-box" style="max-width:480px;">
+      <div class="confirm-modal-header">
+        <h3 class="confirm-modal-title">Reject Selected Numbers</h3>
+        <button type="button" class="confirm-modal-close" onclick="closeRejectSelectedModal()">&times;</button>
+      </div>
+      <div class="confirm-modal-body">
+        <p style="margin:0 0 10px;font-size:13px;color:#64748b;" id="rejectSelectedCount"></p>
+        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">Rejection Remark <span class="req-star">*</span></label>
+        <textarea id="rejectSelectedRemark" rows="3" placeholder="Required: reason for rejection..." style="width:100%;padding:10px;border:1px solid #CBD5E0;border-radius:6px;font-size:13px;resize:vertical;"></textarea>
+        <div id="rejectSelectedErr" style="color:#EF4444;font-size:12px;margin-top:4px;display:none;">Rejection remark is required.</div>
+      </div>
+      <div class="confirm-modal-footer">
+        <button type="button" class="btn sm" onclick="closeRejectSelectedModal()">Cancel</button>
+        <button type="button" class="btn sm no" onclick="confirmRejectSelected()">Reject Numbers</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reset Demo Modal -->
+  <div class="confirm-modal-backdrop" id="resetDemoModal" style="display:none;">
+    <div class="confirm-modal-box" style="max-width:420px;">
+      <div class="confirm-modal-header">
+        <h3 class="confirm-modal-title">Reset Demo Data</h3>
+        <button type="button" class="confirm-modal-close" onclick="document.getElementById('resetDemoModal').style.display='none'">&times;</button>
+      </div>
+      <div class="confirm-modal-body">
+        <p style="margin:0;font-size:13.5px;color:#1e293b;">This will permanently delete <strong>all brand requests, numbers, and logos</strong>. Packages will be kept. This action cannot be undone.</p>
+      </div>
+      <div class="confirm-modal-footer">
+        <button type="button" class="btn sm" onclick="document.getElementById('resetDemoModal').style.display='none'">Cancel</button>
+        <button type="button" class="btn sm no" onclick="confirmResetDemo()">Reset Demo Data</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
