@@ -369,7 +369,6 @@
         m.className = 'msg good';
         m.textContent = (isEditing ? 'Updated ' : 'Published ') + p.name + ' at ' + peso(p.pricePHP) + ' / month';
         cancelPackageEdit();
-        closePackageDrawer();
         showToast(isEditing ? 'Package Updated' : 'Package Published', `${p.name} (Capacity: ${p.capacity}) is now live.`, 'success');
         await load();
       } catch (e) {
@@ -423,6 +422,9 @@
       $('pMsg').textContent = '';
       feeHint();
     }
+
+    function closePackageDrawer() { cancelPackageEdit(); }
+    function openPackageDrawer() {}
 
     // Remove Package (Removes from Operator & Enterprise selector)
     function removePackage(pkgId) {
