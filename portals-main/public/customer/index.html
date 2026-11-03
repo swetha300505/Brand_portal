@@ -214,6 +214,138 @@
       width: 64px;
       height: 64px;
     }
+
+    /* Modern Recent Call List */
+    .recent-call-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .recent-call-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(10, 16, 48, 0.03);
+      transition: all 0.15s ease;
+    }
+    .recent-call-item:hover {
+      border-color: #CBD5E1;
+      box-shadow: 0 4px 12px rgba(10, 16, 48, 0.06);
+      transform: translateY(-1px);
+    }
+    .recent-call-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      flex: 1;
+    }
+    .recent-call-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .recent-call-avatar.verified {
+      background: #ECFDF5;
+      color: #059669;
+      border: 1px solid #A7F3D0;
+    }
+    .recent-call-avatar.unknown {
+      background: #F1F5F9;
+      color: #64748B;
+      border: 1px solid #E2E8F0;
+    }
+    .recent-call-info {
+      min-width: 0;
+      flex: 1;
+    }
+    .recent-call-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--deep-navy);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .recent-call-sub {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .recent-call-num {
+      font-variant-numeric: tabular-nums;
+      font-weight: 500;
+      color: #475569;
+    }
+    .recent-call-dept {
+      color: #64748B;
+    }
+    .recent-call-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .recent-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 20px;
+      line-height: 1;
+    }
+    .recent-badge.verified {
+      background: #ECFDF5;
+      color: #065F46;
+      border: 1px solid #A7F3D0;
+    }
+    .recent-badge.unknown {
+      background: #F1F5F9;
+      color: #475569;
+      border: 1px solid #CBD5E1;
+    }
+    .recent-call-time {
+      font-size: 12px;
+      color: #94A3B8;
+      font-variant-numeric: tabular-nums;
+    }
+    .recent-call-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 8px;
+      background: #EEF2FF;
+      color: var(--primary);
+      border: 1px solid #C7D2FE;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .recent-call-btn:hover {
+      background: var(--primary);
+      color: #FFFFFF;
+      border-color: var(--primary);
+    }
   </style>
 </head>
 <body>
@@ -316,6 +448,17 @@
   <script src="/shared/layout.js"></script>
   <script>
     let hist = [];
+    try {
+      const saved = localStorage.getItem('mobileum_call_hist');
+      if (saved) hist = JSON.parse(saved);
+    } catch (e) {}
+    if (!hist || !hist.length) {
+      hist = [
+        { t: '09:36 PM', who: 'Live Test Bank PNG', dept: 'General', n: '+63 917 000 0001', rawNumber: '+639170000001', ok: true },
+        { t: '09:36 PM', who: 'bank', dept: 'Customer Service', n: '+63 2 8370 8454', rawNumber: '+63283708454', ok: true },
+        { t: '09:35 PM', who: 'Unknown caller', dept: '', n: '+63 917 123 4567', rawNumber: '+639171234567', ok: false, reason: 'unknown' }
+      ];
+    }
     let callTimerInterval = null;
     let callDurationSec = 0;
     let currentCallingNum = '';
@@ -572,21 +715,36 @@
       // 1. Sidebar/Card recent history
       const histEl = $('hist');
       if (!hist.length) {
-        histEl.innerHTML = '<div class="hint">No calls simulated yet.</div>';
+        histEl.innerHTML = '<div class="hint" style="padding:16px 0;text-align:center;">No calls simulated yet. Dial a number above to start.</div>';
       } else {
-        histEl.innerHTML = hist.slice(0, 5).map(h => `
-          <div class="call">
-            <div>
-              <div style="font-weight:600;color:var(--deep-navy);">${esc(h.who)}${h.dept ? ' &middot; ' + esc(h.dept) : ''}</div>
-              <span class="t font-weight:500;">${esc(h.n)}</span>
+        histEl.innerHTML = `<div class="recent-call-list">` + hist.slice(0, 5).map(h => `
+          <div class="recent-call-item">
+            <div class="recent-call-left">
+              <div class="recent-call-avatar ${h.ok ? 'verified' : 'unknown'}">
+                ${h.ok 
+                  ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>` 
+                  : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`}
+              </div>
+              <div class="recent-call-info">
+                <div class="recent-call-name">${esc(h.who)}</div>
+                <div class="recent-call-sub">
+                  <span class="recent-call-num">${esc(h.n)}</span>
+                  ${h.dept ? `<span class="recent-call-dept">&middot; ${esc(h.dept)}</span>` : ''}
+                </div>
+              </div>
             </div>
-            <div style="display:flex;align-items:center;gap:8px;">
-              ${h.ok ? '<span class="badge approved">verified</span>' : '<span class="badge">unknown</span>'}
-              <span class="t">${esc(h.t)}</span>
-              <button class="btn sm" onclick="callNum('${esc(h.rawNumber)}')">Call</button>
+            <div class="recent-call-right">
+              ${h.ok 
+                ? '<span class="recent-badge verified"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Verified</span>' 
+                : '<span class="recent-badge unknown">Unknown</span>'}
+              <span class="recent-call-time">${esc(h.t)}</span>
+              <button class="recent-call-btn" onclick="callNum('${esc(h.rawNumber)}')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 0 0-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/></svg>
+                Call
+              </button>
             </div>
           </div>
-        `).join('');
+        `).join('') + `</div>`;
       }
 
       // 2. Full History Tab Table
@@ -665,6 +823,7 @@
     }
 
     idle();
+    renderHistory();
     load();
     setInterval(load, 3000);
 

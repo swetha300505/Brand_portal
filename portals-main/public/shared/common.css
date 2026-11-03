@@ -205,8 +205,8 @@ a:hover {
 }
 
 .app-sidebar {
-  width: 250px;
-  flex: 0 0 250px;
+  width: 268px;
+  flex: 0 0 268px;
   background-color: var(--sidebar-bg);
   color: var(--sidebar-text);
   display: flex;
@@ -221,7 +221,7 @@ a:hover {
 
 .app-main {
   flex: 1;
-  margin-left: 250px;
+  margin-left: 268px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -345,7 +345,9 @@ a:hover {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 14px;
+  padding: 0 14px;
+  height: 42px;
+  min-height: 42px;
   border-radius: var(--radius-md);
   color: var(--sidebar-text-muted);
   font-size: 13.5px;
@@ -359,6 +361,16 @@ a:hover {
   position: relative;
   outline: none;
   box-shadow: none;
+  white-space: nowrap;
+}
+
+.nav-item .nav-label {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.1px;
 }
 
 .nav-item:focus {
@@ -377,20 +389,14 @@ a:hover {
 }
 
 .nav-item.active {
-  color: var(--sidebar-text);
+  color: #FFFFFF;
   background: var(--sidebar-bg-active);
   font-weight: 600;
+  box-shadow: inset 4px 0 0 0 var(--cyan-accent);
 }
 
 .nav-item.active::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 6px;
-  bottom: 6px;
-  width: 4px;
-  background-color: var(--cyan-accent);
-  border-radius: 0 4px 4px 0;
+  display: none;
 }
 
 .nav-item .icon {
@@ -411,9 +417,16 @@ a:hover {
 .nav-item .badge {
   margin-left: auto;
   min-width: 22px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 2px 7px;
+  padding: 0 7px;
   font-size: 11px;
+  font-weight: 700;
+  border-radius: 10px;
+  flex-shrink: 0;
 }
 
 .sidebar-footer {
@@ -1843,6 +1856,47 @@ table.data-table tr.clickable:hover {
 .packages-form-col {
   position: sticky;
   top: 84px;
+}
+
+.pkg-fields-matrix {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 14px;
+  row-gap: 16px;
+  align-items: start;
+}
+
+.pkg-fields-matrix .form-group {
+  margin-bottom: 0 !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.pkg-label {
+  display: flex !important;
+  align-items: center !important;
+  height: 22px !important;
+  margin-bottom: 6px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--text-dark) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  line-height: 1 !important;
+}
+
+.hint-vat {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-left: 3px;
+}
+
+.pkg-fields-matrix input {
+  height: 44px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 @media (max-width: 1200px) {

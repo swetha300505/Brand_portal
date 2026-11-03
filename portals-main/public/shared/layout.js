@@ -83,7 +83,7 @@
     const navItemsHtml = tabs.map(t => `
       <button class="nav-item ${t.id === currentTab ? 'active' : ''}" data-tab="${t.id}" id="nav_${t.id}">
         <span class="icon">${ICONS[t.icon] || ICONS.dashboard}</span>
-        <span>${t.label}</span>
+        <span class="nav-label">${t.label}</span>
         ${t.badgeId ? `<span class="badge" id="${t.badgeId}" style="display:none">0</span>` : ''}
       </button>
     `).join('');
@@ -149,19 +149,9 @@
     const topbarHtml = `
       <header class="app-topbar">
         <div class="topbar-left">
-          <div style="display:flex;align-items:center;gap:12px;">
-            <img src="/shared/assets/mobileum-logo.png" alt="Mobileum" style="width:28px;height:28px;object-fit:contain;border-radius:4px;">
-            <h1 class="topbar-title" id="shell_topbar_title">${portalName}</h1>
-          </div>
+          <h1 class="topbar-title" id="shell_topbar_title">${portalName}</h1>
           <span style="color:var(--text-secondary);font-size:14px;">/</span>
           <span id="shell_tab_title" style="font-size:14px;font-weight:600;color:var(--text-muted);">${tabs.find(t => t.id === currentTab)?.label || ''}</span>
-        </div>
-        <div class="topbar-right">
-          <div id="shell_db_chip" class="live-indicator">
-            <span class="pulse-dot"></span>
-            <span>MongoDB · Live</span>
-          </div>
-          <span class="demo-tag">Demo Mock-Up</span>
         </div>
       </header>
     `;

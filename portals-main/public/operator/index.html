@@ -94,24 +94,21 @@
             <input type="text" id="pName" placeholder="e.g. Bank Standard" autocomplete="off">
           </div>
 
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="pkg-fields-matrix">
             <div class="form-group">
-              <label for="pCap">Number Capacity <span class="req-star">*</span></label>
+              <label for="pCap" class="pkg-label">Number Capacity <span class="req-star">*</span></label>
               <input type="number" id="pCap" min="1" value="5">
             </div>
             <div class="form-group">
-              <label for="pPrice">Monthly Price (₱, before VAT) <span class="req-star">*</span></label>
+              <label for="pPrice" class="pkg-label">Monthly Price <span class="hint-vat">(₱, ex VAT)</span> <span class="req-star">*</span></label>
               <input type="number" id="pPrice" min="0" step="0.01" value="15000">
             </div>
-          </div>
-
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-            <div class="form-group" style="margin-bottom:0;">
-              <label for="pDuration">Pack Duration</label>
+            <div class="form-group">
+              <label for="pDuration" class="pkg-label">Pack Duration</label>
               <input type="text" id="pDuration" placeholder="e.g. 30 Days" value="30 Days">
             </div>
-            <div class="form-group" style="margin-bottom:0;">
-              <label for="pCalls">No. of Branded Calls</label>
+            <div class="form-group">
+              <label for="pCalls" class="pkg-label">No. of Branded Calls</label>
               <input type="number" id="pCalls" min="1000" step="1000" placeholder="e.g. 50000" value="50000">
             </div>
           </div>
