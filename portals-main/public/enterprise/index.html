@@ -445,50 +445,70 @@
   </div>
 
   <!-- =======================================================================
-       TAB 3: DEPARTMENT LINES (Editable per Enterprise)
-       ======================================================================= -->
-  <div data-tab-panel="departments" style="display:none;">
-    <div class="card">
-      <div class="card-header" style="flex-wrap:wrap;gap:12px;">
-        <div>
-          <h2 class="card-title">Department Lines Configuration</h2>
-          <div class="hint">Manage department-specific phone lines (e.g. Marketing, Customer Care) that can be edited per enterprise and assigned in brand requests.</div>
-        </div>
-        <button type="button" class="btn sm p" onclick="openAddDeptLineModal()">＋ Add Department Line</button>
-      </div>
-
-      <div class="table-wrap">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Department</th>
-              <th>Phone Number (+63)</th>
-              <th>Type</th>
-              <th>Enterprise Brand</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="deptLinesTableBody">
-            <tr><td colspan="5" class="empty-state">Loading department lines...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- =======================================================================
        TAB 4: MY NUMBERS
        ======================================================================= -->
   <div data-tab-panel="numbers" style="display:none;">
     <div class="card">
-      <div class="card-header" style="flex-wrap:wrap;gap:12px;">
+      <div class="card-header" style="flex-wrap:wrap;gap:12px;padding-bottom:14px;">
         <div>
           <h2 class="card-title">My Registered Phone Numbers</h2>
-          <div class="hint">Overview of all active, pending, and approved caller ID numbers registered for your organization.</div>
+          <div class="hint">Overview of all active, pending, approved, and rejected caller ID numbers registered for your organization.</div>
         </div>
-        <div style="width:240px;">
-          <input type="text" id="myNumSearch" placeholder="Search my numbers..." oninput="renderMyNumbersTable()">
+        <div style="width:260px;">
+          <input type="text" id="myNumSearch" placeholder="Search caller ID, brand, dept..." oninput="renderMyNumbersTable()">
         </div>
+      </div>
+
+      <!-- 4 Independent & Combinable Dynamic Filters -->
+      <div class="my-numbers-filters-bar" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;padding:14px 18px;background:#F8FAFD;border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+        <!-- Filter 1: Department -->
+        <div style="display:flex;flex-direction:column;gap:4px;min-width:160px;flex:1;">
+          <label for="filterMyNumDept" style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;">1. Department</label>
+          <select id="filterMyNumDept" style="height:38px;font-size:13px;padding:0 10px;border-radius:8px;border:1px solid var(--border);" onchange="renderMyNumbersTable()">
+            <option value="all">All Departments</option>
+          </select>
+        </div>
+
+        <!-- Filter 2: Enterprise Brand -->
+        <div style="display:flex;flex-direction:column;gap:4px;min-width:160px;flex:1;">
+          <label for="filterMyNumBrand" style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;">2. Enterprise Brand</label>
+          <select id="filterMyNumBrand" style="height:38px;font-size:13px;padding:0 10px;border-radius:8px;border:1px solid var(--border);" onchange="renderMyNumbersTable()">
+            <option value="all">All Brands</option>
+          </select>
+        </div>
+
+        <!-- Filter 3: Caller ID / Type -->
+        <div style="display:flex;flex-direction:column;gap:4px;min-width:150px;flex:1;">
+          <label for="filterMyNumType" style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;">3. Caller ID (Type)</label>
+          <select id="filterMyNumType" style="height:38px;font-size:13px;padding:0 10px;border-radius:8px;border:1px solid var(--border);" onchange="renderMyNumbersTable()">
+            <option value="all">All Types</option>
+            <option value="mobile">Mobile (+63 9xx)</option>
+            <option value="landline">Landline (+63 2)</option>
+          </select>
+        </div>
+
+        <!-- Filter 4: Status (Accepted vs Rejected vs Pending) -->
+        <div style="display:flex;flex-direction:column;gap:4px;min-width:160px;flex:1;">
+          <label for="filterMyNumStatus" style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;">4. Status (Accepted / Rejected)</label>
+          <select id="filterMyNumStatus" style="height:38px;font-size:13px;padding:0 10px;border-radius:8px;border:1px solid var(--border);" onchange="renderMyNumbersTable()">
+            <option value="all">All Statuses</option>
+            <option value="approved">✓ Accepted / Approved</option>
+            <option value="rejected">✕ Rejected</option>
+            <option value="pending">⏳ Pending</option>
+          </select>
+        </div>
+
+        <!-- Reset Button -->
+        <div style="display:flex;align-items:flex-end;">
+          <button type="button" class="btn sm" onclick="resetMyNumbersFilters()" style="height:38px;padding:0 14px;font-size:12px;font-weight:600;border-radius:8px;" title="Reset all 4 filters">
+            ↺ Reset
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Active Filter Summary & Result Count -->
+      <div id="myNumbersFilterSummary" style="padding:8px 18px;font-size:12px;color:var(--text-muted);background:#FFFFFF;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <span id="myNumbersCountLabel">Loading numbers...</span>
       </div>
 
       <div class="table-wrap">
@@ -719,10 +739,14 @@
       tabs: [
         { id: 'subscription', label: 'Subscription Plans', icon: 'subscription' },
         { id: 'brand_requests', label: 'Brand Requests', icon: 'brand', badgeId: 'nav_badge_brand_reqs' },
-        { id: 'departments', label: 'Department Lines', icon: 'departments' },
         { id: 'numbers', label: 'My Numbers', icon: 'numbers' }
       ],
-      defaultTab: 'subscription'
+      defaultTab: 'subscription',
+      onTabChange: (tabId) => {
+        if (tabId === 'numbers') renderMyNumbersTable();
+        if (tabId === 'brand_requests') renderRequestsTable();
+        if (tabId === 'subscription') renderPackagesGrid();
+      }
     });
 
     // ---------- Subscription Management ----------
@@ -2311,6 +2335,7 @@
 
     function renderDepartmentLinesTable() {
       const tbody = $('deptLinesTableBody');
+      if (!tbody) return;
       if (!departmentLines.length) {
         tbody.innerHTML = `
           <tr>
@@ -2410,37 +2435,141 @@
       });
     }
 
-    // ---------- My Numbers Table ----------
+    // ---------- My Numbers Table with 4 Independent & Combinable Filters ----------
+    let myNumbersLastDepts = [];
+    let myNumbersLastBrands = [];
+
+    function populateMyNumbersFilterOptions(numList) {
+      // 1. Department dropdown options
+      const deptSel = $('filterMyNumDept');
+      if (deptSel) {
+        const cur = deptSel.value;
+        const depts = Array.from(new Set(numList.map(n => n.department).filter(Boolean))).sort();
+        if (JSON.stringify(depts) !== JSON.stringify(myNumbersLastDepts)) {
+          myNumbersLastDepts = depts;
+          deptSel.innerHTML = '<option value="all">All Departments</option>' +
+            depts.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('');
+          if (cur && (cur === 'all' || depts.includes(cur))) deptSel.value = cur;
+        }
+      }
+
+      // 2. Enterprise Brand dropdown options
+      const brandSel = $('filterMyNumBrand');
+      if (brandSel) {
+        const cur = brandSel.value;
+        const brands = Array.from(new Set(numList.map(n => n.brandName).filter(Boolean))).sort();
+        if (JSON.stringify(brands) !== JSON.stringify(myNumbersLastBrands)) {
+          myNumbersLastBrands = brands;
+          brandSel.innerHTML = '<option value="all">All Brands</option>' +
+            brands.map(b => `<option value="${esc(b)}">${esc(b)}</option>`).join('');
+          if (cur && (cur === 'all' || brands.includes(cur))) brandSel.value = cur;
+        }
+      }
+    }
+
+    function resetMyNumbersFilters() {
+      if ($('filterMyNumDept')) $('filterMyNumDept').value = 'all';
+      if ($('filterMyNumBrand')) $('filterMyNumBrand').value = 'all';
+      if ($('filterMyNumType')) $('filterMyNumType').value = 'all';
+      if ($('filterMyNumStatus')) $('filterMyNumStatus').value = 'all';
+      if ($('myNumSearch')) $('myNumSearch').value = '';
+      renderMyNumbersTable();
+    }
+
     function renderMyNumbersTable() {
       const tbody = $('myNumbersTableBody');
+      if (!tbody) return;
+
       const query = ($('myNumSearch')?.value || '').toLowerCase().trim();
+      const filterDept = $('filterMyNumDept')?.value || 'all';
+      const filterBrand = $('filterMyNumBrand')?.value || 'all';
+      const filterType = $('filterMyNumType')?.value || 'all';
+      const filterStatus = $('filterMyNumStatus')?.value || 'all';
 
       const numList = [];
       myRequests.forEach(r => {
         (r.numbers || []).forEach(n => {
           numList.push({
             ...n,
-            brandName: r.brandName,
+            brandName: r.brandName || 'Enterprise',
             status: n.status || r.status || 'pending'
           });
         });
       });
 
+      if (!numList.length && Array.isArray(allKnownNumbers) && allKnownNumbers.length) {
+        allKnownNumbers.forEach(n => {
+          numList.push({
+            ...n,
+            brandName: n.brandName || 'Enterprise',
+            status: n.status || 'approved'
+          });
+        });
+      }
+
+      // Populate filter dropdowns dynamically
+      populateMyNumbersFilterOptions(numList);
+
+      // Apply all 4 filters + search independently and in combination
       const filtered = numList.filter(n => {
-        if (!query) return true;
-        return (n.phoneDisplay || '').includes(query) ||
-               (n.phoneE164 || '').includes(query) ||
-               (n.department || '').toLowerCase().includes(query) ||
-               (n.brandName || '').toLowerCase().includes(query);
+        // 1. Department Filter
+        if (filterDept !== 'all') {
+          if ((n.department || '').toLowerCase() !== filterDept.toLowerCase()) return false;
+        }
+
+        // 2. Enterprise Brand Filter
+        if (filterBrand !== 'all') {
+          if ((n.brandName || '').toLowerCase() !== filterBrand.toLowerCase()) return false;
+        }
+
+        // 3. Caller ID (Type) Filter
+        if (filterType !== 'all') {
+          const t = (n.numberType || '').toLowerCase();
+          if (filterType === 'mobile' && !t.includes('mobile')) return false;
+          if (filterType === 'landline' && !t.includes('landline')) return false;
+        }
+
+        // 4. Status Filter (Accepted vs Rejected vs Pending)
+        if (filterStatus !== 'all') {
+          const s = (n.status || 'pending').toLowerCase();
+          if (filterStatus === 'approved' || filterStatus === 'accepted') {
+            if (s !== 'approved' && s !== 'accepted') return false;
+          } else if (filterStatus === 'rejected') {
+            if (s !== 'rejected') return false;
+          } else if (filterStatus === 'pending') {
+            if (s !== 'pending') return false;
+          }
+        }
+
+        // 5. Caller ID / Keyword search
+        if (query) {
+          const match = (n.phoneDisplay || '').toLowerCase().includes(query) ||
+                        (n.phoneE164 || '').toLowerCase().includes(query) ||
+                        (n.department || '').toLowerCase().includes(query) ||
+                        (n.brandName || '').toLowerCase().includes(query);
+          if (!match) return false;
+        }
+
+        return true;
       });
+
+      // Update count summary
+      const countLabel = $('myNumbersCountLabel');
+      if (countLabel) {
+        const hasFilters = filterDept !== 'all' || filterBrand !== 'all' || filterType !== 'all' || filterStatus !== 'all' || !!query;
+        countLabel.innerHTML = hasFilters
+          ? `Showing <strong>${filtered.length}</strong> of <strong>${numList.length}</strong> numbers (Filters active)`
+          : `Total registered numbers: <strong>${numList.length}</strong>`;
+      }
 
       if (!filtered.length) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="5" class="empty-state">
+            <td colspan="5" class="empty-state" style="padding:28px 16px;">
               <div class="empty-state-icon">📱</div>
-              <div class="empty-state-title">No numbers found</div>
-              <div class="empty-state-desc">Your department numbers will be listed here with their real-time verification status.</div>
+              <div class="empty-state-title">No numbers match the selected filters</div>
+              <div class="empty-state-desc">Try clearing or adjusting the Department, Brand, Type, or Status filters.</div>
+              <button type="button" class="btn sm" onclick="resetMyNumbersFilters()" style="margin-top:10px;">↺ Clear Filters</button>
             </td>
           </tr>
         `;
@@ -2449,9 +2578,9 @@
 
       tbody.innerHTML = filtered.map(n => `
         <tr>
-          <td><strong class="peso">${esc(n.phoneDisplay)}</strong> <span class="hint" style="font-size:11px;">(${esc(n.phoneE164)})</span></td>
-          <td><span class="chip" style="font-size:11px;">${esc(n.numberType)}</span></td>
-          <td><strong style="color:var(--deep-navy);">${esc(n.department)}</strong></td>
+          <td><strong class="peso">${esc(n.phoneDisplay || n.phoneE164)}</strong> <span class="hint" style="font-size:11px;">(${esc(n.phoneE164)})</span></td>
+          <td><span class="chip" style="font-size:11px;">${esc(n.numberType || 'Mobile')}</span></td>
+          <td><strong style="color:var(--deep-navy);">${esc(n.department || '-')}</strong></td>
           <td>${esc(n.brandName)}</td>
           <td>${statusBadge(n.status)}</td>
         </tr>
@@ -2481,7 +2610,7 @@
         departmentLines = Array.isArray(lines) ? lines : [];
         allKnownNumbers = Array.isArray(nums) ? nums : [];
         populateDeptSelects();
-        renderDepartmentLinesTable();
+        renderMyNumbersTable();
 
         // If form has no numbers yet on initial load, auto-fill one unique number
         if (isInitialLoad && assignedNumbers.length === 0) {
@@ -2558,7 +2687,6 @@
 
     updateLivePreview();
     load();
-    loadDepartmentLines();
     setInterval(load, 3000);
 
     if (syncChannel) {
